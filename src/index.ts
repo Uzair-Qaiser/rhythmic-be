@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import connectDB from "./config/database";
 import authRoutes from "./routes/auth";
 import userRoutes from "./routes/users";
+import qrCodeRoutes from "./routes/qrCodes";
 
 // Load environment variables
 dotenv.config();
@@ -41,6 +42,7 @@ app.get("/health", (req, res) => {
 // API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/qrcodes", qrCodeRoutes);
 
 // Start server
 app.listen(PORT, () => {
@@ -48,5 +50,6 @@ app.listen(PORT, () => {
   console.log(`🌐 Local: http://localhost:${PORT}`);
   console.log(`🔐 Auth API: http://localhost:${PORT}/api/auth`);
   console.log(`👥 Users API: http://localhost:${PORT}/api/users`);
+  console.log(`📱 QR Codes API: http://localhost:${PORT}/api/qrcodes`);
   console.log(`🏥 Health check: http://localhost:${PORT}/health`);
 });
