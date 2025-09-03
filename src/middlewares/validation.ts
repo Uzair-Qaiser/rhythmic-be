@@ -77,3 +77,28 @@ export const validatePasswordChange = [
     .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
     .withMessage('New password must contain at least one uppercase letter, one lowercase letter, and one number')
 ];
+
+// Bulk delete manufacturers validation
+export const validateBulkDeleteManufacturers = [
+  body('manufacturerIds')
+    .isArray({ min: 1 })
+    .withMessage('manufacturerIds must be a non-empty array')
+    .custom((value) => {
+      if (!Array.isArray(value)) {
+        throw new Error('manufacturerIds must be an array');
+      }
+      
+      if (value.length === 0) {
+        throw new Error('manufacturerIds array cannot be empty');
+      }
+      
+      // Check if all items are valid strings
+      for (let i = 0; i < value.length; i++) {
+        if (typeof value[i] !== 'string' || value[i].trim().length === 0) {
+          throw new Error(`Invalid manufacturer ID at index ${i}`);
+        }
+      }
+      
+      return true;
+    })
+];

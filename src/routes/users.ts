@@ -8,9 +8,12 @@ import {
   getUserStats,
   getAppUsers,
   getManufacturers,
-  createManufacturer
+  createManufacturer,
+  deleteManufacturer,
+  bulkDeleteManufacturers
 } from '../controllers/userController';
 import { authenticate, requireSuperAdmin, requirePortalUser } from '../middlewares/auth';
+import { validateBulkDeleteManufacturers } from '../middlewares/validation';
 
 const router = Router();
 
@@ -21,6 +24,8 @@ router.use(authenticate);
 router.get('/app-users', requireSuperAdmin, getAppUsers); // Get only app users
 router.get('/manufacturers', requireSuperAdmin, getManufacturers); // Get only manufacturers
 router.post('/manufacturers', requireSuperAdmin, createManufacturer); // Create manufacturer
+router.delete('/manufacturers/:id', requireSuperAdmin, deleteManufacturer); // Delete manufacturer
+router.delete('/manufacturers', requireSuperAdmin, validateBulkDeleteManufacturers, bulkDeleteManufacturers); // Bulk delete manufacturers
 router.get('/stats', requireSuperAdmin, getUserStats);
 router.put('/:id/status', requireSuperAdmin, updateUserStatus);
 router.put('/:id/type', requireSuperAdmin, updateUserType);

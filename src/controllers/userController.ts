@@ -299,3 +299,93 @@ export const createManufacturer = async (req: Request, res: Response): Promise<v
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+// Delete manufacturer (super admin only)
+export const deleteManufacturer = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    
+    // First check if the user exists and is actually a manufacturer
+    const manufacturer = await User.findById(id);
+    if (!manufacturer) {
+      res.status(404).json({ message: 'Manufacturer not found.' });
+      return;
+    }
+    
+    if (manufacturer.userType !== UserType.MANUFACTURER) {
+      res.status(400).json({ message: 'User is not a manufacturer.' });
+      return;
+    }
+    
+    // Delete the manufacturer
+    await User.findByIdAndDelete(id);
+    
+    res.json({ 
+      message: 'Manufacturer deleted successfully',
+      deletedManufacturer: {
+        id: manufacturer._id,
+        email: manufacturer.email,
+        firstName: manufacturer.firstName,
+        lastName: manufacturer.lastName
+      }
+    });
+  } catch (error: any) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// Bulk delete manufacturers (super admin only)
+export const bulkDeleteManufacturers = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { manufacturerIds } = req.body;
+    
+    if (!Array.isArray(manufacturerIds) || manufacturerIds.length === 0) {
+      res.status(400).json({ message: 'manufacturerIds must be a non-empty array.' });
+      return;
+    }
+    
+    // Validate that all IDs are valid ObjectIds
+    const validIds = manufacturerIds.filter(id => {
+      try {
+        return id && typeof id === 'string' && id.length > 0;
+      } catch {
+        return false;
+      }
+    });
+    
+    if (validIds.length !== manufacturerIds.length) {
+      res.status(400).json({ message: 'Some manufacturer IDs are invalid.' });
+      return;
+    }
+    
+    // Find all manufacturers to be deleted
+    const manufacturers = await User.find({
+      _id: { $in: validIds },
+      userType: UserType.MANUFACTURER
+    });
+    
+    if (manufacturers.length === 0) {
+      res.status(404).json({ message: 'No manufacturers found with the provided IDs.' });
+      return;
+    }
+    
+    // Delete all found manufacturers
+    const result = await User.deleteMany({
+      _id: { $in: validIds },
+      userType: UserType.MANUFACTURER
+    });
+    
+    res.json({
+      message: `${result.deletedCount} manufacturer(s) deleted successfully`,
+      deletedCount: result.deletedCount,
+      deletedManufacturers: manufacturers.map(m => ({
+        id: m._id,
+        email: m.email,
+        firstName: m.firstName,
+        lastName: m.lastName
+      }))
+    });
+  } catch (error: any) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
